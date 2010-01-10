@@ -37,6 +37,8 @@ Requires(post): rpm-helper
 Requires(preun): rpm-helper
 Requires(pre): rpm-helper
 Requires(postun): rpm-helper
+Requires(pre):	apache-conf >= 2.2.0
+Requires:	apache-conf >= 2.2.0
 BuildRequires:	pcre-devel
 BuildRequires:	zlib-devel
 BuildRequires:	openssl-devel
