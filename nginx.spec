@@ -10,7 +10,7 @@
 Summary:	Robust, small and high performance http and reverse proxy server
 Name:		nginx
 Version:	0.8.31
-Release:	%mkrel 1
+Release:	%mkrel 2
 Group:		System/Servers
 # BSD License (two clause)
 # http://www.freebsd.org/copyright/freebsd-license.html
@@ -88,6 +88,7 @@ export DESTDIR=%{buildroot}
     --with-http_gzip_static_module \
     --with-http_stub_status_module \
     --with-http_perl_module \
+    --with-ipv6 \
     --with-mail \
     --with-mail_ssl_module \
     --with-cc-opt="%{optflags} $(pcre-config --cflags)" 
