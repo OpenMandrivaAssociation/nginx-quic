@@ -27,9 +27,6 @@ Source101:	poweredby.png
 Source102:	nginx-logo.png
 Source103:	50x.html
 Source104:	404.html
-# removes -Werror in upstream build scripts.  -Werror conflicts with
-# -D_FORTIFY_SOURCE=2 causing warnings to turn into errors.
-Patch0:		nginx-auto-cc-gcc.patch
 # configuration patch to match all the Fedora paths for logs, pid files
 # etc.
 Patch1:		nginx-conf.patch
@@ -56,7 +53,6 @@ proxy server written by Igor Sysoev.
 
 %setup -q
 
-%patch0 -p0
 %patch1 -p0
 
 %build
