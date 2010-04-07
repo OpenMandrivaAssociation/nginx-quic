@@ -10,7 +10,7 @@
 Summary:	Robust, small and high performance http and reverse proxy server
 Name:		nginx
 Version:	0.8.34
-Release:	%mkrel 2
+Release:	%mkrel 3
 Group:		System/Servers
 # BSD License (two clause)
 # http://www.freebsd.org/copyright/freebsd-license.html
