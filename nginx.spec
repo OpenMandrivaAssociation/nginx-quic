@@ -9,14 +9,14 @@
 
 Summary:	Robust, small and high performance http and reverse proxy server
 Name:		nginx
-Version:	0.8.34
-Release:	%mkrel 3
+Version:	0.8.35
+Release:	%mkrel 1
 Group:		System/Servers
 # BSD License (two clause)
 # http://www.freebsd.org/copyright/freebsd-license.html
 License:	BSD
-URL:		http://nginx.net/ 
-Source0:	http://sysoev.ru/nginx/nginx-%{version}.tar.gz
+URL:		http://nginx.net/
+Source0:	http://nginx.org/download/nginx-%{version}.tar.gz
 Source1:	%{name}.init
 Source2:	%{name}.logrotate
 Source3:	virtual.conf
@@ -56,6 +56,7 @@ proxy server written by Igor Sysoev.
 %patch1 -p0
 
 %build
+%serverbuild
 # nginx does not utilize a standard configure script.  It has its own
 # and the standard configure options cause the nginx configure script
 # to error out.  This is is also the reason for the DESTDIR environment
@@ -87,8 +88,9 @@ export DESTDIR=%{buildroot}
     --with-ipv6 \
     --with-mail \
     --with-mail_ssl_module \
-    --with-cc-opt="%{optflags} $(pcre-config --cflags)" 
-make %{?_smp_mflags} 
+    --with-cc-opt="$CFLAGS $(pcre-config --cflags)" 
+
+%make
 
 %install
 rm -rf %{buildroot}
@@ -171,4 +173,3 @@ rm -rf %{buildroot}
 %attr(-,%{nginx_user},%{nginx_group}) %dir %{nginx_home_tmp}
 %attr(-,%{nginx_user},%{nginx_group}) %dir %{nginx_logdir}
 %attr(-,%{nginx_user},%{nginx_group}) %dir /var/run/%{name}
-
