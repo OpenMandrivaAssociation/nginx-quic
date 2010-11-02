@@ -43,6 +43,7 @@ BuildRequires:	perl-devel
 BuildRequires:	perl(ExtUtils::Embed)
 Requires:	pcre
 Requires:	openssl
+Provides:	webserver
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 %description
