@@ -9,19 +9,20 @@
 
 Summary:	Robust, small and high performance http and reverse proxy server
 Name:		nginx
-Version:	0.8.53
-Release:	%mkrel 2
+Version:	0.9.3
+Release:	%mkrel 1
 Group:		System/Servers
 # BSD License (two clause)
 # http://www.freebsd.org/copyright/freebsd-license.html
 License:	BSD
 URL:		http://nginx.net/
 Source0:	http://nginx.org/download/nginx-%{version}.tar.gz
-Source1:	%{name}.init
-Source2:	%{name}.logrotate
-Source3:	virtual.conf
-Source4:	ssl.conf
-Source5:	%{name}.sysconfig
+Source1:	http://nginx.org/download/nginx-%{version}.tar.gz.asc
+Source2:	%{name}.init
+Source3:	%{name}.logrotate
+Source4:	virtual.conf
+Source5:	ssl.conf
+Source6:	%{name}.sysconfig
 Source100:	index.html
 Source101:	poweredby.png
 Source102:	nginx-logo.png
@@ -105,11 +106,11 @@ find %{buildroot} -type f -exec chmod 0644 {} \;
 find %{buildroot} -type f -name '*.so' -exec chmod 0755 {} \;
 chmod 0755 %{buildroot}%{_sbindir}/nginx
 
-%{__install} -p -D -m 0755 %{SOURCE1} %{buildroot}%{_initrddir}/%{name}
-%{__install} -p -D -m 0644 %{SOURCE2} %{buildroot}%{_sysconfdir}/logrotate.d/%{name}
-%{__install} -p -D -m 0644 %{SOURCE5} %{buildroot}%{_sysconfdir}/sysconfig/%{name}
+%{__install} -p -D -m 0755 %{SOURCE2} %{buildroot}%{_initrddir}/%{name}
+%{__install} -p -D -m 0644 %{SOURCE3} %{buildroot}%{_sysconfdir}/logrotate.d/%{name}
+%{__install} -p -D -m 0644 %{SOURCE6} %{buildroot}%{_sysconfdir}/sysconfig/%{name}
 %{__install} -p -d -m 0755 %{buildroot}%{nginx_confdir}/conf.d
-%{__install} -p -m 0644 %{SOURCE3} %{SOURCE4} %{buildroot}%{nginx_confdir}/conf.d
+%{__install} -p -m 0644 %{SOURCE4} %{SOURCE5} %{buildroot}%{nginx_confdir}/conf.d
 %{__install} -p -d -m 0755 %{buildroot}%{nginx_home_tmp}
 %{__install} -p -d -m 0755 %{buildroot}%{nginx_logdir}
 %{__install} -p -d -m 0755 %{buildroot}%{nginx_webroot}
@@ -125,6 +126,9 @@ for textfile in CHANGES; do
     iconv --from-code ISO8859-1 --to-code UTF-8 --output $textfile $textfile.old
     rm -f $textfile.old
 done
+
+install -d %{buildroot}%{_mandir}/man8
+install -m0644 man/*.8 %{buildroot}%{_mandir}/man8/
 
 %pre
 %_pre_useradd %{nginx_user} %{nginx_home} /bin/false
@@ -150,6 +154,7 @@ rm -rf %{buildroot}
 %{nginx_datadir}/
 %{_sbindir}/%{name}
 %{_mandir}/man3/%{name}.3pm*
+%{_mandir}/man8/*
 %{_initrddir}/%{name}
 %dir %{nginx_confdir}
 %dir %{nginx_confdir}/conf.d
