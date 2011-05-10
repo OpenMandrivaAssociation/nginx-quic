@@ -9,7 +9,7 @@
 
 Summary:	Robust, small and high performance http and reverse proxy server
 Name:		nginx
-Version:	1.0.1
+Version:	1.0.2
 Release:	%mkrel 1
 Group:		System/Servers
 # BSD License (two clause)
