@@ -28,9 +28,6 @@ Source101:	poweredby.png
 Source102:	nginx-logo.png
 Source103:	50x.html
 Source104:	404.html
-# configuration patch to match all the Fedora paths for logs, pid files
-# etc.
-Patch1:		nginx-conf.patch
 Requires(post): rpm-helper
 Requires(preun): rpm-helper
 Requires(pre): rpm-helper
@@ -54,8 +51,6 @@ proxy server written by Igor Sysoev.
 %prep
 
 %setup -q
-
-%patch1 -p0
 
 %build
 %serverbuild
