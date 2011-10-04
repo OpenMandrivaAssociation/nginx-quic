@@ -9,7 +9,7 @@
 
 Summary:	Robust, small and high performance http and reverse proxy server
 Name:		nginx
-Version:	1.0.5
+Version:	1.0.8
 Release:	%mkrel 1
 Group:		System/Servers
 # BSD License (two clause)
@@ -50,7 +50,7 @@ proxy server written by Igor Sysoev.
 
 %prep
 
-%setup -q
+%setup -q -n %{name}-%{version}
 
 %build
 %serverbuild
