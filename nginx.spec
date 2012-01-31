@@ -42,15 +42,13 @@ BuildRequires:	perl(ExtUtils::Embed)
 Requires:	pcre
 Requires:	openssl
 Provides:	webserver
-BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 %description
 Nginx [engine x] is an HTTP(S) server, HTTP(S) reverse proxy and IMAP/POP3
 proxy server written by Igor Sysoev.
 
 %prep
-
-%setup -q -n %{name}-%{version}
+%setup -q
 
 %build
 %serverbuild
@@ -92,8 +90,6 @@ export DESTDIR=%{buildroot}
 %make OPTIMIZE="-fno-PIE"
 
 %install
-rm -rf %{buildroot}
-
 %makeinstall_std INSTALLDIRS=vendor
 
 find %{buildroot} -type f -name .packlist -exec rm -f {} \;
@@ -141,9 +137,6 @@ fi
 
 %postun
 %_postun_userdel %{nginx_user}
-
-%clean
-rm -rf %{buildroot}
 
 %files
 %defattr(-,root,root,-)
