@@ -52,12 +52,6 @@ proxy server written by Igor Sysoev.
 
 %build
 %serverbuild
-# nginx does not utilize a standard configure script.  It has its own
-# and the standard configure options cause the nginx configure script
-# to error out.  This is is also the reason for the DESTDIR environment
-# variable.  The configure script(s) have been patched (Patch1 and
-# Patch2) in order to support installing into a build environment.
-export DESTDIR=%{buildroot}
 ./configure \
     --user=%{nginx_user} \
     --group=%{nginx_group} \
