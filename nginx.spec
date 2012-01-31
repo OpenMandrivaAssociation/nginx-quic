@@ -86,8 +86,10 @@ export DESTDIR=%{buildroot}
     --with-mail \
     --with-mail_ssl_module \
     --with-cc-opt="$CFLAGS $(pcre-config --cflags)" 
-
-%make
+# this is only passed to perl module being built and only overrides the
+# default '-O' flag which anyways lowers optimizations (which we don't
+# want)
+%make OPTIMIZE="-fno-PIE"
 
 %install
 rm -rf %{buildroot}
