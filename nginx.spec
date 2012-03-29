@@ -9,7 +9,7 @@
 
 Summary:	Robust, small and high performance http and reverse proxy server
 Name:		nginx
-Version:	1.1.16
+Version:	1.1.18
 Release:	1
 Group:		System/Servers
 # BSD License (two clause)
@@ -18,28 +18,27 @@ License:	BSD
 URL:		http://nginx.net/
 Source0:	http://nginx.org/download/nginx-%{version}.tar.gz
 Source1:	http://nginx.org/download/nginx-%{version}.tar.gz.asc
-Source2:	%{name}.init
-Source3:	%{name}.logrotate
+Source2:	nginx.service
+Source3:	nginx.logrotate
 Source4:	virtual.conf
 Source5:	ssl.conf
-Source6:	%{name}.sysconfig
 Source100:	index.html
 Source101:	poweredby.png
 Source102:	nginx-logo.png
 Source103:	50x.html
 Source104:	404.html
-Requires(post): rpm-helper
-Requires(preun): rpm-helper
 Requires(pre): rpm-helper
 Requires(postun): rpm-helper
-Requires(pre):	apache-conf >= 2.2.0
-Requires:	apache-conf >= 2.2.0
-BuildRequires:	pcre-devel
-BuildRequires:	zlib-devel
+BuildRequires:	gd-devel
+BuildRequires:	GeoIP-devel
+BuildRequires:	libxslt-devel
 BuildRequires:	openssl-devel
+BuildRequires:	pcre-devel
 BuildRequires:	perl-devel
 BuildRequires:	perl(ExtUtils::Embed)
+BuildRequires:	zlib-devel
 Requires:	pcre
+Requires:	geoip
 Requires:	openssl
 Provides:	webserver
 
@@ -65,16 +64,24 @@ proxy server written by Igor Sysoev.
     --http-fastcgi-temp-path=%{nginx_home_tmp}/fastcgi \
     --pid-path=/var/run/%{name}/%{name}.pid \
     --lock-path=/var/lock/subsys/%{name} \
+    --with-file-aio \
+    --with-ipv6 \
     --with-http_ssl_module \
     --with-http_realip_module \
     --with-http_addition_module \
+    --with-http_xslt_module \
+    --with-http_image_filter_module \
+    --with-http_geoip_module \
     --with-http_sub_module \
     --with-http_dav_module \
     --with-http_flv_module \
+    --with-http_mp4_module \
     --with-http_gzip_static_module \
+    --with-http_random_index_module \
+    --with-http_secure_link_module \
+    --with-http_degradation_module \
     --with-http_stub_status_module \
     --with-http_perl_module \
-    --with-ipv6 \
     --with-mail \
     --with-mail_ssl_module \
     --with-cc-opt="$CFLAGS $(pcre-config --cflags)" 
@@ -84,6 +91,7 @@ proxy server written by Igor Sysoev.
 %make OPTIMIZE="-fno-PIE"
 
 %install
+
 %makeinstall_std INSTALLDIRS=vendor
 
 find %{buildroot} -type f -name .packlist -exec rm -f {} \;
@@ -93,9 +101,8 @@ find %{buildroot} -type f -exec chmod 0644 {} \;
 find %{buildroot} -type f -name '*.so' -exec chmod 0755 {} \;
 chmod 0755 %{buildroot}%{_sbindir}/nginx
 
-%{__install} -p -D -m 0755 %{SOURCE2} %{buildroot}%{_initrddir}/%{name}
+%{__install} -p -D -m 0755 %{SOURCE2} %{buildroot}/lib/systemd/system/nginx.service
 %{__install} -p -D -m 0644 %{SOURCE3} %{buildroot}%{_sysconfdir}/logrotate.d/%{name}
-%{__install} -p -D -m 0644 %{SOURCE6} %{buildroot}%{_sysconfdir}/sysconfig/%{name}
 %{__install} -p -d -m 0755 %{buildroot}%{nginx_confdir}/conf.d
 %{__install} -p -m 0644 %{SOURCE4} %{SOURCE5} %{buildroot}%{nginx_confdir}/conf.d
 %{__install} -p -d -m 0755 %{buildroot}%{nginx_home_tmp}
@@ -121,15 +128,21 @@ install -m0644 man/*.8 %{buildroot}%{_mandir}/man8/
 %_pre_useradd %{nginx_user} %{nginx_home} /bin/false
 
 %post
-%_post_service %{nginx_user}
-if [ -f /var/lock/subsys/%{name} ]; then
-    %{_initrddir}/%{name} restart 1>&2;
+if [ $1 -eq 1 ]; then
+    /bin/systemctl daemon-reload >/dev/null 2>&1 || :
 fi
 
 %preun
-%_preun_service %{nginx_user}
+if [ $1 -eq 0 ]; then
+    /bin/systemctl --no-reload disable nginx.service >/dev/null 2>&1 || :
+    /bin/systemctl stop nginx.service >/dev/null 2>&1 || :
+fi
 
 %postun
+/bin/systemctl daemon-reload >/dev/null 2>&1 || :
+if [ $1 -gt 1 ]; then
+    /bin/systemctl try-restart nginx.service >/dev/null 2>&1 || :
+fi
 %_postun_userdel %{nginx_user}
 
 %files
@@ -139,7 +152,7 @@ fi
 %{_sbindir}/%{name}
 %{_mandir}/man3/%{name}.3pm*
 %{_mandir}/man8/*
-%{_initrddir}/%{name}
+/lib/systemd/system/nginx.service
 %dir %{nginx_confdir}
 %dir %{nginx_confdir}/conf.d
 %config(noreplace) %{nginx_confdir}/conf.d/*.conf
@@ -159,7 +172,6 @@ fi
 %config(noreplace) %{nginx_confdir}/uwsgi_params
 %config(noreplace) %{nginx_confdir}/uwsgi_params.default
 %config(noreplace) %{_sysconfdir}/logrotate.d/%{name}
-%config(noreplace) %{_sysconfdir}/sysconfig/%{name}
 %dir %{perl_vendorarch}/auto/%{name}
 %{perl_vendorarch}/%{name}.pm
 %{perl_vendorarch}/auto/%{name}/%{name}.so
