@@ -7,9 +7,9 @@
 %define nginx_datadir %{_datadir}/nginx
 %define nginx_webroot %{nginx_datadir}/html
 
-Summary:	Robust, small and high performance http and reverse proxy server
+Summary:	Robust, small and high performance HTTP and reverse proxy server
 Name:		nginx
-Version:	1.1.18
+Version:	1.2.0
 Release:	1
 Group:		System/Servers
 # BSD License (two clause)
