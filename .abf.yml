@@ -1,0 +1,12 @@
+sources:
+  "404.html:"	a52970c6df978399ce74a4d8099251fbc29e48aa
+  "50x.html:"	59a8e03d804b40c48a0d0e0227b07297bc3a3243
+  "index.html:"	3846d4d81884bda3251e67df8331b3b33361b265
+  "nginx-1.2.2.tar.gz:"	1893940485e21f8c9bdc8058eb9cc2826d629d04
+  "nginx-1.2.2.tar.gz.asc:"	921eee72a547b54ede17e1af70c2a07eb722023c
+  "nginx-logo.png:"	a609ff4e27b6236233ea576739a6fb040da4d550
+  "nginx.logrotate:"	a789787c962ab672f6c2c83c7cdf5d9d890caca0
+  "nginx.service:"	1981b411b867f9fde2b6b611dfa74b4a246bfe70
+  "poweredby.png:"	3257422eacf1c510239da81c1d683af63e42e129
+  "ssl.conf:"	b1eb95423cbcf87ea02d7960bd5208669288381e
+  "virtual.conf:"	ef05d9038d717833e43b10b65ed6da99cc2c38ac
