@@ -9,7 +9,7 @@
 
 Summary:	Robust, small and high performance HTTP and reverse proxy server
 Name:		nginx
-Version:	1.2.8
+Version:	1.5.3
 Release:	1
 Group:		System/Servers
 # BSD License (two clause)
@@ -128,21 +128,12 @@ install -m0644 man/*.8 %{buildroot}%{_mandir}/man8/
 %_pre_useradd %{nginx_user} %{nginx_home} /bin/false
 
 %post
-if [ $1 -eq 1 ]; then
-    /bin/systemctl daemon-reload >/dev/null 2>&1 || :
-fi
+%_post_service %{name}
 
 %preun
-if [ $1 -eq 0 ]; then
-    /bin/systemctl --no-reload disable nginx.service >/dev/null 2>&1 || :
-    /bin/systemctl stop nginx.service >/dev/null 2>&1 || :
-fi
+%_preun_service %{name}
 
 %postun
-/bin/systemctl daemon-reload >/dev/null 2>&1 || :
-if [ $1 -gt 1 ]; then
-    /bin/systemctl try-restart nginx.service >/dev/null 2>&1 || :
-fi
 %_postun_userdel %{nginx_user}
 
 %files
