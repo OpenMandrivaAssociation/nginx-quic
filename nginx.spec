@@ -15,7 +15,7 @@ Group:		System/Servers
 # BSD License (two clause)
 # http://www.freebsd.org/copyright/freebsd-license.html
 License:	BSD
-URL:		http://nginx.net/
+Url:		http://nginx.net/
 Source0:	http://nginx.org/download/nginx-%{version}.tar.gz
 Source1:	http://nginx.org/download/nginx-%{version}.tar.gz.asc
 Source2:	nginx.service
@@ -27,16 +27,15 @@ Source101:	poweredby.png
 Source102:	nginx-logo.png
 Source103:	50x.html
 Source104:	404.html
-Requires(pre): rpm-helper
-Requires(postun): rpm-helper
 BuildRequires:	gd-devel
 BuildRequires:	GeoIP-devel
-BuildRequires:	libxslt-devel
-BuildRequires:	openssl-devel
-BuildRequires:	pcre-devel
 BuildRequires:	perl-devel
 BuildRequires:	perl(ExtUtils::Embed)
-BuildRequires:	zlib-devel
+BuildRequires:	pkgconfig(libpcre)
+BuildRequires:	pkgconfig(libxslt)
+BuildRequires:	pkgconfig(openssl)
+BuildRequires:	pkgconfig(zlib)
+Requires(pre,postun):	rpm-helper
 Requires:	pcre
 Requires:	geoip
 Requires:	openssl
@@ -52,46 +51,45 @@ proxy server written by Igor Sysoev.
 %build
 %serverbuild
 ./configure \
-    --user=%{nginx_user} \
-    --group=%{nginx_group} \
-    --prefix=%{nginx_datadir} \
-    --sbin-path=%{_sbindir}/%{name} \
-    --conf-path=%{nginx_confdir}/%{name}.conf \
-    --error-log-path=%{nginx_logdir}/error.log \
-    --http-log-path=%{nginx_logdir}/access.log \
-    --http-client-body-temp-path=%{nginx_home_tmp}/client_body \
-    --http-proxy-temp-path=%{nginx_home_tmp}/proxy \
-    --http-fastcgi-temp-path=%{nginx_home_tmp}/fastcgi \
-    --pid-path=/var/run/%{name}/%{name}.pid \
-    --lock-path=/var/lock/subsys/%{name} \
-    --with-file-aio \
-    --with-ipv6 \
-    --with-http_ssl_module \
-    --with-http_realip_module \
-    --with-http_addition_module \
-    --with-http_xslt_module \
-    --with-http_image_filter_module \
-    --with-http_geoip_module \
-    --with-http_sub_module \
-    --with-http_dav_module \
-    --with-http_flv_module \
-    --with-http_mp4_module \
-    --with-http_gzip_static_module \
-    --with-http_random_index_module \
-    --with-http_secure_link_module \
-    --with-http_degradation_module \
-    --with-http_stub_status_module \
-    --with-http_perl_module \
-    --with-mail \
-    --with-mail_ssl_module \
-    --with-cc-opt="$CFLAGS $(pcre-config --cflags)" 
+	--user=%{nginx_user} \
+	--group=%{nginx_group} \
+	--prefix=%{nginx_datadir} \
+	--sbin-path=%{_sbindir}/%{name} \
+	--conf-path=%{nginx_confdir}/%{name}.conf \
+	--error-log-path=%{nginx_logdir}/error.log \
+	--http-log-path=%{nginx_logdir}/access.log \
+	--http-client-body-temp-path=%{nginx_home_tmp}/client_body \
+	--http-proxy-temp-path=%{nginx_home_tmp}/proxy \
+	--http-fastcgi-temp-path=%{nginx_home_tmp}/fastcgi \
+	--pid-path=/var/run/%{name}/%{name}.pid \
+	--lock-path=/var/lock/subsys/%{name} \
+	--with-file-aio \
+	--with-ipv6 \
+	--with-http_ssl_module \
+	--with-http_realip_module \
+	--with-http_addition_module \
+	--with-http_xslt_module \
+	--with-http_image_filter_module \
+	--with-http_geoip_module \
+	--with-http_sub_module \
+	--with-http_dav_module \
+	--with-http_flv_module \
+	--with-http_mp4_module \
+	--with-http_gzip_static_module \
+	--with-http_random_index_module \
+	--with-http_secure_link_module \
+	--with-http_degradation_module \
+	--with-http_stub_status_module \
+	--with-http_perl_module \
+	--with-mail \
+	--with-mail_ssl_module \
+	--with-cc-opt="$CFLAGS $(pcre-config --cflags)" 
 # this is only passed to perl module being built and only overrides the
 # default '-O' flag which anyways lowers optimizations (which we don't
 # want)
 %make OPTIMIZE="-fno-PIE"
 
 %install
-
 %makeinstall_std INSTALLDIRS=vendor
 
 find %{buildroot} -type f -name .packlist -exec rm -f {} \;
@@ -101,15 +99,15 @@ find %{buildroot} -type f -exec chmod 0644 {} \;
 find %{buildroot} -type f -name '*.so' -exec chmod 0755 {} \;
 chmod 0755 %{buildroot}%{_sbindir}/nginx
 
-%{__install} -p -D -m 0755 %{SOURCE2} %{buildroot}/lib/systemd/system/nginx.service
-%{__install} -p -D -m 0644 %{SOURCE3} %{buildroot}%{_sysconfdir}/logrotate.d/%{name}
-%{__install} -p -d -m 0755 %{buildroot}%{nginx_confdir}/conf.d
-%{__install} -p -m 0644 %{SOURCE4} %{SOURCE5} %{buildroot}%{nginx_confdir}/conf.d
-%{__install} -p -d -m 0755 %{buildroot}%{nginx_home_tmp}
-%{__install} -p -d -m 0755 %{buildroot}%{nginx_logdir}
-%{__install} -p -d -m 0755 %{buildroot}%{nginx_webroot}
+install -p -D -m 0755 %{SOURCE2} %{buildroot}/lib/systemd/system/nginx.service
+install -p -D -m 0644 %{SOURCE3} %{buildroot}%{_sysconfdir}/logrotate.d/%{name}
+install -p -d -m 0755 %{buildroot}%{nginx_confdir}/conf.d
+install -p -m 0644 %{SOURCE4} %{SOURCE5} %{buildroot}%{nginx_confdir}/conf.d
+install -p -d -m 0755 %{buildroot}%{nginx_home_tmp}
+install -p -d -m 0755 %{buildroot}%{nginx_logdir}
+install -p -d -m 0755 %{buildroot}%{nginx_webroot}
 
-%{__install} -p -m 0644 %{SOURCE100} %{SOURCE101} %{SOURCE102} %{SOURCE103} %{SOURCE104} %{buildroot}%{nginx_webroot}
+install -p -m 0644 %{SOURCE100} %{SOURCE101} %{SOURCE102} %{SOURCE103} %{SOURCE104} %{buildroot}%{nginx_webroot}
 
 # add current version
 perl -pi -e "s|_VERSION_|%{version}|g" %{buildroot}%{nginx_webroot}/index.html
@@ -137,7 +135,6 @@ install -m0644 man/*.8 %{buildroot}%{_mandir}/man8/
 %_postun_userdel %{nginx_user}
 
 %files
-%defattr(-,root,root,-)
 %doc LICENSE CHANGES README
 %{nginx_datadir}/
 %{_sbindir}/%{name}
@@ -170,3 +167,4 @@ install -m0644 man/*.8 %{buildroot}%{_mandir}/man8/
 %attr(-,%{nginx_user},%{nginx_group}) %dir %{nginx_home_tmp}
 %attr(-,%{nginx_user},%{nginx_group}) %dir %{nginx_logdir}
 %attr(-,%{nginx_user},%{nginx_group}) %dir /var/run/%{name}
+
