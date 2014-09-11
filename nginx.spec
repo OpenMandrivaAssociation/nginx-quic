@@ -9,8 +9,8 @@
 
 Summary:	Robust, small and high performance HTTP and reverse proxy server
 Name:		nginx
-Version:	1.5.10
-Release:	3
+Version:	1.7.4
+Release:	1
 Group:		System/Servers
 # BSD License (two clause)
 # http://www.freebsd.org/copyright/freebsd-license.html
@@ -49,7 +49,7 @@ proxy server written by Igor Sysoev.
 %setup -q
 
 %build
-%serverbuild
+%setup_compile_flags
 ./configure \
 	--user=%{nginx_user} \
 	--group=%{nginx_group} \
