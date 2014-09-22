@@ -83,7 +83,9 @@ proxy server written by Igor Sysoev.
 	--with-http_perl_module \
 	--with-mail \
 	--with-mail_ssl_module \
-	--with-cc-opt="$CFLAGS $(pcre-config --cflags)" 
+	--with-pcre \
+        --with-ld-opt="$RPM_LD_FLAGS -Wl,-E" # so the perl module finds its symbols
+
 # this is only passed to perl module being built and only overrides the
 # default '-O' flag which anyways lowers optimizations (which we don't
 # want)
