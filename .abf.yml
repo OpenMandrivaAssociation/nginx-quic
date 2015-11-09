@@ -1,7 +1,5 @@
-removed_sources:
-  nginx-1.7.12.tar.gz: 346af3e6dd087a2189d6344c182208263eaa079b
 sources:
-  nginx-1.8.0.tar.gz: 12bad312764feae50246685ab2e74512d1aa9b2f
-  nginx-1.8.0.tar.gz.asc: 49d13e2353bbc32029a49ec863a46912fc85e766
   nginx-logo.png: a609ff4e27b6236233ea576739a6fb040da4d550
   poweredby.png: 3257422eacf1c510239da81c1d683af63e42e129
+  nginx-1.9.6.tar.gz: 07485429d927e72c97c75c01c45f781db87ff5c8
+  nginx-1.9.6.tar.gz.asc: 4f0da9a6aba9ad3933790c0284af59393fe8a3fb
