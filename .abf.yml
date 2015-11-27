@@ -1,5 +1,5 @@
 sources:
   nginx-logo.png: a609ff4e27b6236233ea576739a6fb040da4d550
   poweredby.png: 3257422eacf1c510239da81c1d683af63e42e129
-  nginx-1.9.6.tar.gz: 07485429d927e72c97c75c01c45f781db87ff5c8
-  nginx-1.9.6.tar.gz.asc: 4f0da9a6aba9ad3933790c0284af59393fe8a3fb
+  nginx-1.9.7.tar.gz: 30fea2e3de988c824c3c53c6e47e84b98300b134
+  nginx-1.9.7.tar.gz.asc: 82d38ece291c6af103a6a016cf155dc9338df734
