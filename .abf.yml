@@ -1,7 +1,9 @@
 removed_sources:
   nginx-1.9.7.tar.gz: 30fea2e3de988c824c3c53c6e47e84b98300b134
-sources:
   nginx-1.9.9.tar.gz: 8262504469b86b967cdeb0821607a94ce863dfb4
+sources:
+  nginx-1.9.12.tar.gz: 5945a0701f0ee0755fd20643f755507996a3f7f3
+  nginx-1.9.12.tar.gz.asc: 1aa3d5fdd82ff2e238411952f21bc32edff971fe
   nginx-1.9.9.tar.gz.asc: 887dc7cdc68f3bcd0cfbf312be310474b46d7dbe
   nginx-logo.png: a609ff4e27b6236233ea576739a6fb040da4d550
-  poweredby.png: 3257422eacf1c510239da81c1d683af63e42e129
+  poweredby.png: b746a5ccb846c857842991dfcea0512f15fe943f
