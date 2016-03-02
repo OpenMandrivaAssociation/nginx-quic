@@ -10,15 +10,13 @@
 Summary:	Robust, small and high performance HTTP and reverse proxy server
 Name:		nginx
 Version:	1.9.12
-
-Release:	3
+Release:	4
 Group:		System/Servers
 # BSD License (two clause)
 # http://www.freebsd.org/copyright/freebsd-license.html
 License:	BSD
 Url:		http://nginx.net/
-Source0:	http://nginx.org/download/nginx-%{version}.tar.gz
-Source1:	http://nginx.org/download/nginx-%{version}.tar.gz.asc
+Source0:	http://nginx.org/download/%{name}-%{version}.tar.gz
 Source2:	nginx.service
 Source3:	nginx.logrotate
 Source4:	virtual.conf
@@ -127,14 +125,13 @@ done
 install -d %{buildroot}%{_mandir}/man8
 install -m0644 man/*.8 %{buildroot}%{_mandir}/man8/
 
+install -d %{buildroot}%{_presetdir}
+cat > %{buildroot}%{_presetdir}/86-nginx.preset << EOF
+enable nginx.service
+EOF
+
 %pre
 %_pre_useradd %{nginx_user} %{nginx_home} /bin/false
-
-%post
-%_post_service %{name}
-
-%preun
-%_preun_service %{name}
 
 %postun
 %_postun_userdel %{nginx_user}
@@ -145,7 +142,8 @@ install -m0644 man/*.8 %{buildroot}%{_mandir}/man8/
 %{_sbindir}/%{name}
 %{_mandir}/man3/%{name}.3pm*
 %{_mandir}/man8/*
-/lib/systemd/system/nginx.service
+%{_presetdir}/86-nginx.preset
+%{_unitdir}/nginx.service
 %dir %{nginx_confdir}
 %dir %{nginx_confdir}/conf.d
 %config(noreplace) %{nginx_confdir}/conf.d/*.conf
