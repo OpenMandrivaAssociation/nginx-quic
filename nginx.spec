@@ -10,7 +10,8 @@
 Summary:	Robust, small and high performance HTTP and reverse proxy server
 Name:		nginx
 Version:	1.9.12
-Release:	1
+
+Release:	2
 Group:		System/Servers
 # BSD License (two clause)
 # http://www.freebsd.org/copyright/freebsd-license.html
@@ -66,6 +67,8 @@ proxy server written by Igor Sysoev.
 	--with-file-aio \
 	--with-ipv6 \
 	--with-http_ssl_module \
+	--with-http_v2_module \
+	--with-http_slice_module \
 	--with-http_realip_module \
 	--with-http_addition_module \
 	--with-http_xslt_module \
