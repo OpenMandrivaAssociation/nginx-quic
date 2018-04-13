@@ -48,7 +48,6 @@ proxy server written by Igor Sysoev.
 %setup -q
 
 %build
-%serverbuild
 %setup_compile_flags
 ./configure \
 	--user=%{nginx_user} \
