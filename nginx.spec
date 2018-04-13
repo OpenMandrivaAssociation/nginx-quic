@@ -48,6 +48,7 @@ proxy server written by Igor Sysoev.
 %setup -q
 
 %build
+%serverbuild_hardened
 %setup_compile_flags
 ./configure \
 	--user=%{nginx_user} \
@@ -85,7 +86,7 @@ proxy server written by Igor Sysoev.
 	--with-mail \
 	--with-mail_ssl_module \
 	--with-pcre \
-	--with-ld-opt="%{ldflags} -Wl,-E" # so the perl module finds its symbols
+	--with-ld-opt="$RPM_LD_FLAGS -Wl,-E" # so the perl module finds its symbols
 
 # this is only passed to perl module being built and only overrides the
 # default '-O' flag which anyways lowers optimizations (which we don't
