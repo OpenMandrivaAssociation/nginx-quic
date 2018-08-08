@@ -7,6 +7,8 @@
 %define nginx_datadir %{_datadir}/nginx
 %define nginx_webroot %{nginx_datadir}/html
 
+%global optflags %{optflags} -O3
+
 Summary:	Robust, small and high performance HTTP and reverse proxy server
 Name:		nginx
 Version:	1.14.0
