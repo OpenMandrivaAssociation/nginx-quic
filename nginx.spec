@@ -26,6 +26,11 @@ Source101:	poweredby.png
 Source102:	nginx-logo.png
 Source103:	50x.html
 Source104:	404.html
+# Apply fix for bug in glibc libcrypt, if needed only.
+# That has been fixed some time in glibc-2.3.X and is
+# not needed with libxcrypt anyways.
+Patch0:	0001-unix-ngx_user-Apply-fix-for-really-old-bug-in-glibc-.patch
+
 BuildRequires:	gd-devel
 BuildRequires:	GeoIP-devel
 BuildRequires:	perl-devel
@@ -34,6 +39,7 @@ BuildRequires:	pkgconfig(libpcre)
 BuildRequires:	pkgconfig(libxslt)
 BuildRequires:	pkgconfig(openssl)
 BuildRequires:	pkgconfig(zlib)
+BuildRequires:	systemd-macros
 Requires(pre,postun):	rpm-helper
 Requires:	pcre
 Requires:	geoip
@@ -45,7 +51,7 @@ Nginx [engine x] is an HTTP(S) server, HTTP(S) reverse proxy and IMAP/POP3
 proxy server written by Igor Sysoev.
 
 %prep
-%setup -q
+%autosetup -p1
 
 %build
 %serverbuild_hardened
@@ -91,10 +97,10 @@ proxy server written by Igor Sysoev.
 # this is only passed to perl module being built and only overrides the
 # default '-O' flag which anyways lowers optimizations (which we don't
 # want)
-%make OPTIMIZE="-fno-PIE"
+%make_build OPTIMIZE="-fno-PIE"
 
 %install
-%makeinstall_std INSTALLDIRS=vendor
+%make_install INSTALLDIRS=vendor
 
 find %{buildroot} -type f -name .packlist -exec rm -f {} \;
 find %{buildroot} -type f -name perllocal.pod -exec rm -f {} \;
@@ -144,7 +150,7 @@ EOF
 %{_mandir}/man3/%{name}.3pm*
 %{_mandir}/man8/*
 %{_presetdir}/86-nginx.preset
-%{_unitdir}/nginx.service
+%{_systemunitdir}/nginx.service
 %dir %{nginx_confdir}
 %dir %{nginx_confdir}/conf.d
 %config(noreplace) %{nginx_confdir}/conf.d/*.conf
