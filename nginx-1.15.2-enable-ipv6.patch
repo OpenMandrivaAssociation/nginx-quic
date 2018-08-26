@@ -1,0 +1,12 @@
+diff -up nginx-1.15.2/conf/nginx.conf.omv~ nginx-1.15.2/conf/nginx.conf
+--- nginx-1.15.2/conf/nginx.conf.omv~	2018-08-26 22:10:06.835122335 +0200
++++ nginx-1.15.2/conf/nginx.conf	2018-08-26 22:10:49.990211045 +0200
+@@ -33,7 +33,7 @@ http {
+     #gzip  on;
+ 
+     server {
+-        listen       80;
++        listen       [::]:80;
+         server_name  localhost;
+ 
+         #charset koi8-r;

@@ -1,3 +1,5 @@
+%global _disable_ld_no_undefined 1
+
 %define nginx_user nginx
 %define nginx_group %{nginx_user}
 %define nginx_home /var/lib/nginx
@@ -5,13 +7,14 @@
 %define nginx_logdir /var/log/nginx
 %define nginx_confdir %{_sysconfdir}/nginx
 %define nginx_datadir %{_datadir}/nginx
-%define nginx_webroot %{nginx_datadir}/html
+%define nginx_webroot /srv/www/html
 
-%global optflags %{optflags} -O3
+%global optflags %{optflags} -Ofast
+%global ldflags %{ldflags} -Wl,-E
 
 Summary:	Robust, small and high performance HTTP and reverse proxy server
 Name:		nginx
-Version:	1.14.0
+Version:	1.15.2
 Release:	1
 Group:		System/Servers
 # BSD License (two clause)
@@ -28,10 +31,7 @@ Source101:	poweredby.png
 Source102:	nginx-logo.png
 Source103:	50x.html
 Source104:	404.html
-# Apply fix for bug in glibc libcrypt, if needed only.
-# That has been fixed some time in glibc-2.3.X and is
-# not needed with libxcrypt anyways.
-Patch0:	0001-unix-ngx_user-Apply-fix-for-really-old-bug-in-glibc-.patch
+Patch0:		nginx-1.15.2-enable-ipv6.patch
 
 BuildRequires:	gd-devel
 BuildRequires:	GeoIP-devel
@@ -42,6 +42,7 @@ BuildRequires:	pkgconfig(libxslt)
 BuildRequires:	pkgconfig(openssl)
 BuildRequires:	pkgconfig(zlib)
 BuildRequires:	systemd-macros
+BuildRequires:	rpm-helper
 Requires(pre,postun):	rpm-helper
 Requires:	pcre
 Requires:	geoip
@@ -94,7 +95,9 @@ proxy server written by Igor Sysoev.
 	--with-mail \
 	--with-mail_ssl_module \
 	--with-pcre \
-	--with-ld-opt="$RPM_LD_FLAGS -Wl,-E" # so the perl module finds its symbols
+	--with-ld-opt="%{ldflags}" # so the perl module finds its symbols
+
+sed -i -e 's|-Wl,--no-undefined||g' objs/Makefile
 
 # this is only passed to perl module being built and only overrides the
 # default '-O' flag which anyways lowers optimizations (which we don't
@@ -111,7 +114,7 @@ find %{buildroot} -type f -exec chmod 0644 {} \;
 find %{buildroot} -type f -name '*.so' -exec chmod 0755 {} \;
 chmod 0755 %{buildroot}%{_sbindir}/nginx
 
-install -p -D -m 0755 %{SOURCE2} %{buildroot}/lib/systemd/system/nginx.service
+install -p -D -m 0644 %{SOURCE2} %{buildroot}/lib/systemd/system/nginx.service
 install -p -D -m 0644 %{SOURCE3} %{buildroot}%{_sysconfdir}/logrotate.d/%{name}
 install -p -d -m 0755 %{buildroot}%{nginx_confdir}/conf.d
 install -p -m 0644 %{SOURCE4} %{SOURCE5} %{buildroot}%{nginx_confdir}/conf.d
@@ -126,9 +129,9 @@ perl -pi -e "s|_VERSION_|%{version}|g" %{buildroot}%{nginx_webroot}/index.html
 
 # convert to UTF-8 all files that give warnings.
 for textfile in CHANGES; do
-    mv $textfile $textfile.old
-    iconv --from-code ISO8859-1 --to-code UTF-8 --output $textfile $textfile.old
-    rm -f $textfile.old
+	mv $textfile $textfile.old
+	iconv --from-code ISO8859-1 --to-code UTF-8 --output $textfile $textfile.old
+	rm -f $textfile.old
 done
 
 install -d %{buildroot}%{_mandir}/man8
@@ -178,3 +181,4 @@ EOF
 %attr(-,%{nginx_user},%{nginx_group}) %dir %{nginx_home}
 %attr(-,%{nginx_user},%{nginx_group}) %dir %{nginx_home_tmp}
 %attr(-,%{nginx_user},%{nginx_group}) %dir %{nginx_logdir}
+/srv/www
