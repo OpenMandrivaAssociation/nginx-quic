@@ -155,7 +155,7 @@ EOF
 %{_mandir}/man3/%{name}.3pm*
 %{_mandir}/man8/*
 %{_presetdir}/86-nginx.preset
-%{_systemunitdir}/nginx.service
+%{_unitdir}/nginx.service
 %dir %{nginx_confdir}
 %dir %{nginx_confdir}/conf.d
 %config(noreplace) %{nginx_confdir}/conf.d/*.conf
