@@ -1,6 +1,6 @@
 removed_sources:
   nginx-1.15.6.tar.gz: b644566068d2995533629ac1329a296ea135a69b
 sources:
-  nginx-1.15.8.tar.gz: 1816c7e3e96c7c76e1224d88436faf1b29ceb14b
   nginx-logo.png: a609ff4e27b6236233ea576739a6fb040da4d550
   poweredby.png: b746a5ccb846c857842991dfcea0512f15fe943f
+  nginx-1.15.9.tar.gz: c6dfbc71a894dacf4688b2b541180150a8bbd8a9
