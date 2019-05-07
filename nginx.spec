@@ -91,6 +91,7 @@ proxy server written by Igor Sysoev.
 	--with-http_secure_link_module \
 	--with-http_degradation_module \
 	--with-http_stub_status_module \
+	--with-http_auth_request_module \
 	--with-http_perl_module \
 	--with-mail \
 	--with-mail_ssl_module \
