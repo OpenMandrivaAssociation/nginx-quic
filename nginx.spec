@@ -14,7 +14,7 @@
 
 Summary:	Robust, small and high performance HTTP and reverse proxy server
 Name:		nginx
-Version:	1.17.5
+Version:	1.17.6
 Release:	1
 Group:		System/Servers
 # BSD License (two clause)
