@@ -156,9 +156,6 @@ EOF
 %pre
 %_pre_useradd %{nginx_user} %{nginx_home} /bin/false
 
-%postun
-%_postun_userdel %{nginx_user}
-
 %post
 %systemd_post nginx.service
 
@@ -167,6 +164,7 @@ EOF
 
 %postun
 %systemd_postun nginx.service
+%_postun_userdel %{nginx_user}
 
 %post mod-http-perl
 if [ $1 -eq 1 ]; then
