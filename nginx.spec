@@ -10,12 +10,12 @@
 %define nginx_webroot /srv/www/html
 
 %global optflags %{optflags} -Ofast
-%global ldflags %{ldflags} -Wl,-E
+%global build_ldflags %{build_ldflags} -Wl,-E
 
 Summary:	Robust, small and high performance HTTP and reverse proxy server
 Name:		nginx
 Version:	1.19.8
-Release:	1
+Release:	2
 Group:		System/Servers
 # BSD License (two clause)
 # http://www.freebsd.org/copyright/freebsd-license.html
@@ -48,17 +48,26 @@ Requires:	pcre
 Requires:	geoip
 Requires:	openssl
 Provides:	webserver
+Suggests:	%{name}-mod-http-perl
 
 %description
 Nginx [engine x] is an HTTP(S) server, HTTP(S) reverse proxy and IMAP/POP3
 proxy server written by Igor Sysoev.
+
+%package mod-http-perl
+Summary:	Nginx HTTP perl module
+Requires:	nginx
+
+%description mod-http-perl
+%{summary}.
 
 %prep
 %autosetup -p1
 
 %build
 %serverbuild_hardened
-%setup_compile_flags
+%set_build_flags
+
 ./configure \
 	--user=%{nginx_user} \
 	--group=%{nginx_group} \
@@ -92,11 +101,12 @@ proxy server written by Igor Sysoev.
 	--with-http_degradation_module \
 	--with-http_stub_status_module \
 	--with-http_auth_request_module \
-	--with-http_perl_module \
+	--with-http_perl_module=dynamic
 	--with-mail \
 	--with-mail_ssl_module \
 	--with-pcre \
-	--with-ld-opt="%{ldflags}" # so the perl module finds its symbols
+	--with-pcre-jit \
+	--with-ld-opt="%{build_ldflags}" # so the perl module finds its symbols
 
 sed -i -e 's|-Wl,--no-undefined||g' objs/Makefile
 
@@ -130,9 +140,9 @@ perl -pi -e "s|_VERSION_|%{version}|g" %{buildroot}%{nginx_webroot}/index.html
 
 # convert to UTF-8 all files that give warnings.
 for textfile in CHANGES; do
-	mv $textfile $textfile.old
-	iconv --from-code ISO8859-1 --to-code UTF-8 --output $textfile $textfile.old
-	rm -f $textfile.old
+    mv $textfile $textfile.old
+    iconv --from-code ISO8859-1 --to-code UTF-8 --output $textfile $textfile.old
+    rm -f $textfile.old
 done
 
 install -d %{buildroot}%{_mandir}/man8
@@ -148,6 +158,20 @@ EOF
 
 %postun
 %_postun_userdel %{nginx_user}
+
+%post
+%systemd_post nginx.service
+
+%preun
+%systemd_preun nginx.service
+
+%postun
+%systemd_postun nginx.service
+
+%post mod-http-perl
+if [ $1 -eq 1 ]; then
+    systemctl reload nginx.service >/dev/null 2>&1 || :
+fi
 
 %files
 %doc LICENSE CHANGES README
@@ -177,9 +201,14 @@ EOF
 %config(noreplace) %{nginx_confdir}/uwsgi_params.default
 %config(noreplace) %{_sysconfdir}/logrotate.d/%{name}
 %dir %{perl_vendorarch}/auto/%{name}
-%{perl_vendorarch}/%{name}.pm
-%{perl_vendorarch}/auto/%{name}/%{name}.so
 %attr(-,%{nginx_user},%{nginx_group}) %dir %{nginx_home}
 %attr(-,%{nginx_user},%{nginx_group}) %dir %{nginx_home_tmp}
 %attr(-,%{nginx_user},%{nginx_group}) %dir %{nginx_logdir}
 /srv/www
+
+%files mod-http-perl
+%{_datadir}/nginx/modules/mod-http-perl.conf
+%{_libdir}/nginx/modules/ngx_http_perl_module.so
+%dir %{perl_vendorarch}/auto/nginx
+%{perl_vendorarch}/nginx.pm
+%{perl_vendorarch}/auto/nginx/nginx.so
