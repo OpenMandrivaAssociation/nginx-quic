@@ -6,11 +6,11 @@
 %define nginx_home_tmp %{nginx_home}/tmp
 %define nginx_logdir /var/log/nginx
 %define nginx_confdir %{_sysconfdir}/nginx
+%define nginx_modulesdir %{_libdir}/nginx
 %define nginx_datadir %{_datadir}/nginx
 %define nginx_webroot /srv/www/html
 
 %global optflags %{optflags} -Ofast
-%global build_ldflags %{build_ldflags} -Wl,-E
 
 Summary:	Robust, small and high performance HTTP and reverse proxy server
 Name:		nginx
@@ -45,7 +45,6 @@ BuildRequires:	systemd-macros
 BuildRequires:	rpm-helper
 Requires(pre,postun):	rpm-helper
 Requires:	pcre
-Requires:	geoip
 Requires:	openssl
 Provides:	webserver
 Suggests:	%{name}-mod-http-perl
@@ -56,9 +55,19 @@ proxy server written by Igor Sysoev.
 
 %package mod-http-perl
 Summary:	Nginx HTTP perl module
-Requires:	nginx
+Group:		System/Servers
+Requires:	%{name}
 
 %description mod-http-perl
+%{summary}.
+
+%package mod-http-geoip
+Summary:	Nginx HTTP geoip module
+Group:		System/Servers
+Requires:	%{name}
+Requires:	geoip
+
+%description mod-http-geoip
 %{summary}.
 
 %prep
@@ -81,6 +90,7 @@ Requires:	nginx
 	--http-fastcgi-temp-path=%{nginx_home_tmp}/fastcgi \
 	--pid-path=/run/%{name}.pid \
 	--lock-path=/var/lock/subsys/%{name} \
+	--modules-path=%{nginx_modulesdir} \
 	--with-file-aio \
 	--with-ipv6 \
 	--with-http_ssl_module \
@@ -90,7 +100,7 @@ Requires:	nginx
 	--with-http_addition_module \
 	--with-http_xslt_module \
 	--with-http_image_filter_module \
-	--with-http_geoip_module \
+	--with-http_geoip_module=dynamic \
 	--with-http_sub_module \
 	--with-http_dav_module \
 	--with-http_flv_module \
@@ -101,12 +111,12 @@ Requires:	nginx
 	--with-http_degradation_module \
 	--with-http_stub_status_module \
 	--with-http_auth_request_module \
-	--with-http_perl_module=dynamic
+	--with-http_perl_module=dynamic \
 	--with-mail \
 	--with-mail_ssl_module \
 	--with-pcre \
 	--with-pcre-jit \
-	--with-ld-opt="%{build_ldflags}" # so the perl module finds its symbols
+	--with-ld-opt="%{build_ldflags} -Wl,-E" # so the perl module finds its symbols
 
 sed -i -e 's|-Wl,--no-undefined||g' objs/Makefile
 
@@ -125,18 +135,20 @@ find %{buildroot} -type f -exec chmod 0644 {} \;
 find %{buildroot} -type f -name '*.so' -exec chmod 0755 {} \;
 chmod 0755 %{buildroot}%{_sbindir}/nginx
 
-install -p -D -m 0644 %{SOURCE2} %{buildroot}/lib/systemd/system/nginx.service
+install -p -D -m 0644 %{SOURCE2} %{buildroot}%{_unitdir}/nginx.service
 install -p -D -m 0644 %{SOURCE3} %{buildroot}%{_sysconfdir}/logrotate.d/%{name}
 install -p -d -m 0755 %{buildroot}%{nginx_confdir}/conf.d
 install -p -m 0644 %{SOURCE4} %{SOURCE5} %{buildroot}%{nginx_confdir}/conf.d
 install -p -d -m 0755 %{buildroot}%{nginx_home_tmp}
 install -p -d -m 0755 %{buildroot}%{nginx_logdir}
 install -p -d -m 0755 %{buildroot}%{nginx_webroot}
+install -p -d -m 0755 %{buildroot}%{nginx_modulesdir}
+install -p -d -m 0755 %{buildroot}%{nginx_datadir}/modules
 
 install -p -m 0644 %{SOURCE100} %{SOURCE101} %{SOURCE102} %{SOURCE103} %{SOURCE104} %{buildroot}%{nginx_webroot}
 
 # add current version
-perl -pi -e "s|_VERSION_|%{version}|g" %{buildroot}%{nginx_webroot}/index.html
+sed -i -e "s|_VERSION_|%{version}|g" %{buildroot}%{nginx_webroot}/index.html
 
 # convert to UTF-8 all files that give warnings.
 for textfile in CHANGES; do
@@ -147,6 +159,9 @@ done
 
 install -d %{buildroot}%{_mandir}/man8
 install -m0644 man/*.8 %{buildroot}%{_mandir}/man8/
+
+echo 'load_module "%{nginx_modulesdir}/ngx_http_perl_module.so";' > %{buildroot}%{nginx_datadir}/modules/mod-http-perl.conf
+echo 'load_module "%{nginx_modulesdir}/ngx_http_geoip_module.so";' > %{buildroot}%{nginx_datadir}/modules/mod-http-geoip.conf
 
 install -d %{buildroot}%{_presetdir}
 cat > %{buildroot}%{_presetdir}/86-nginx.preset << EOF
@@ -173,7 +188,9 @@ fi
 
 %files
 %doc LICENSE CHANGES README
-%{nginx_datadir}/
+%dir %{nginx_datadir}
+%dir %{nginx_datadir}/modules
+%dir %{nginx_modulesdir}
 %{_sbindir}/%{name}
 %{_mandir}/man3/%{name}.3pm*
 %{_mandir}/man8/*
@@ -198,15 +215,18 @@ fi
 %config(noreplace) %{nginx_confdir}/uwsgi_params
 %config(noreplace) %{nginx_confdir}/uwsgi_params.default
 %config(noreplace) %{_sysconfdir}/logrotate.d/%{name}
-%dir %{perl_vendorarch}/auto/%{name}
 %attr(-,%{nginx_user},%{nginx_group}) %dir %{nginx_home}
 %attr(-,%{nginx_user},%{nginx_group}) %dir %{nginx_home_tmp}
 %attr(-,%{nginx_user},%{nginx_group}) %dir %{nginx_logdir}
 /srv/www
 
 %files mod-http-perl
-%{_datadir}/nginx/modules/mod-http-perl.conf
-%{_libdir}/nginx/modules/ngx_http_perl_module.so
-%dir %{perl_vendorarch}/auto/nginx
+%{nginx_datadir}/modules/mod-http-perl.conf
+%{nginx_modulesdir}/ngx_http_perl_module.so
+%dir %{perl_vendorarch}/auto/%{name}
 %{perl_vendorarch}/nginx.pm
 %{perl_vendorarch}/auto/nginx/nginx.so
+
+%files mod-http-geoip
+%{nginx_datadir}/modules/mod-http-geoip.conf
+%{nginx_modulesdir}/ngx_http_geoip_module.so
