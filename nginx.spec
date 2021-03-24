@@ -196,6 +196,7 @@ fi
 %{_mandir}/man8/*
 %{_presetdir}/86-nginx.preset
 %{_unitdir}/nginx.service
+%{nginx_datadir}/html/*.html
 %dir %{nginx_confdir}
 %dir %{nginx_confdir}/conf.d
 %config(noreplace) %{nginx_confdir}/conf.d/*.conf
