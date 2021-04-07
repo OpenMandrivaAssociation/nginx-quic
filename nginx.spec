@@ -15,13 +15,14 @@
 Summary:	Robust, small and high performance HTTP and reverse proxy server
 Name:		nginx
 Version:	1.19.9
-Release:	1
+Release:	2
 Group:		System/Servers
 # BSD License (two clause)
 # http://www.freebsd.org/copyright/freebsd-license.html
 License:	BSD
 Url:		http://nginx.net/
 Source0:	http://nginx.org/download/%{name}-%{version}.tar.gz
+Source1:	nginx.sysusers
 Source2:	nginx.service
 Source3:	nginx.logrotate
 Source4:	virtual.conf
@@ -42,12 +43,10 @@ BuildRequires:	pkgconfig(libxslt)
 BuildRequires:	pkgconfig(openssl)
 BuildRequires:	pkgconfig(zlib)
 BuildRequires:	systemd-macros
-BuildRequires:	rpm-helper
-Requires(pre,postun):	rpm-helper
 Requires:	pcre
 Requires:	openssl
 Provides:	webserver
-Suggests:	%{name}-mod-http-perl
+%systemd_requires
 
 %description
 Nginx [engine x] is an HTTP(S) server, HTTP(S) reverse proxy and IMAP/POP3
@@ -68,6 +67,13 @@ Requires:	%{name}
 Requires:	geoip
 
 %description mod-http-geoip
+%{summary}.
+
+%package mod-http-image-filter
+Summary:	Nginx HTTP image filter module
+Requires:	%{name}
+
+%description mod-http-image-filter
 %{summary}.
 
 %prep
@@ -99,7 +105,7 @@ Requires:	geoip
 	--with-http_realip_module \
 	--with-http_addition_module \
 	--with-http_xslt_module \
-	--with-http_image_filter_module \
+	--with-http_image_filter_module=dynamic \
 	--with-http_geoip_module=dynamic \
 	--with-http_sub_module \
 	--with-http_dav_module \
@@ -135,6 +141,7 @@ find %{buildroot} -type f -exec chmod 0644 {} \;
 find %{buildroot} -type f -name '*.so' -exec chmod 0755 {} \;
 chmod 0755 %{buildroot}%{_sbindir}/nginx
 
+install -p -D -m 0644 %{SOURCE1} %{buildroot}%{_sysusersdir}/%{name}.conf
 install -p -D -m 0644 %{SOURCE2} %{buildroot}%{_unitdir}/nginx.service
 install -p -D -m 0644 %{SOURCE3} %{buildroot}%{_sysconfdir}/logrotate.d/%{name}
 install -p -d -m 0755 %{buildroot}%{nginx_confdir}/conf.d
@@ -144,6 +151,7 @@ install -p -d -m 0755 %{buildroot}%{nginx_logdir}
 install -p -d -m 0755 %{buildroot}%{nginx_webroot}
 install -p -d -m 0755 %{buildroot}%{nginx_modulesdir}
 install -p -d -m 0755 %{buildroot}%{nginx_datadir}/modules
+
 
 install -p -m 0644 %{SOURCE100} %{SOURCE101} %{SOURCE102} %{SOURCE103} %{SOURCE104} %{buildroot}%{nginx_webroot}
 
@@ -162,14 +170,12 @@ install -m0644 man/*.8 %{buildroot}%{_mandir}/man8/
 
 echo 'load_module "%{nginx_modulesdir}/ngx_http_perl_module.so";' > %{buildroot}%{nginx_datadir}/modules/mod-http-perl.conf
 echo 'load_module "%{nginx_modulesdir}/ngx_http_geoip_module.so";' > %{buildroot}%{nginx_datadir}/modules/mod-http-geoip.conf
+echo 'load_module "%{nginx_modulesdir}/ngx_http_image_filter_module.so";' > %{buildroot}%{nginx_datadir}/modules//mod-http-image-filter.conf
 
 install -d %{buildroot}%{_presetdir}
 cat > %{buildroot}%{_presetdir}/86-nginx.preset << EOF
 enable nginx.service
 EOF
-
-%pre
-%_pre_useradd %{nginx_user} %{nginx_home} /bin/false
 
 %post
 %systemd_post nginx.service
@@ -179,9 +185,18 @@ EOF
 
 %postun
 %systemd_postun nginx.service
-%_postun_userdel %{nginx_user}
+
+%post mod-http-geoip
+if [ $1 -eq 1 ]; then
+    systemctl reload nginx.service >/dev/null 2>&1 || :
+fi
 
 %post mod-http-perl
+if [ $1 -eq 1 ]; then
+    systemctl reload nginx.service >/dev/null 2>&1 || :
+fi
+
+%post mod-http-image-filter
 if [ $1 -eq 1 ]; then
     systemctl reload nginx.service >/dev/null 2>&1 || :
 fi
@@ -194,6 +209,7 @@ fi
 %{_sbindir}/%{name}
 %{_mandir}/man3/%{name}.3pm*
 %{_mandir}/man8/*
+%{_sysusersdir}/%{name}.conf
 %{_presetdir}/86-nginx.preset
 %{_unitdir}/nginx.service
 %{nginx_datadir}/html/*.html
@@ -231,3 +247,7 @@ fi
 %files mod-http-geoip
 %{nginx_datadir}/modules/mod-http-geoip.conf
 %{nginx_modulesdir}/ngx_http_geoip_module.so
+
+%files mod-http-image-filter
+%{nginx_datadir}/modules/mod-http-image-filter.conf
+%{nginx_modulesdir}/ngx_http_image_filter_module.so
