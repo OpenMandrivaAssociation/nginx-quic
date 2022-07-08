@@ -158,13 +158,6 @@ install -p -m 0644 %{SOURCE100} %{SOURCE101} %{SOURCE102} %{SOURCE103} %{SOURCE1
 # add current version
 sed -i -e "s|_VERSION_|%{version}|g" %{buildroot}%{nginx_webroot}/index.html
 
-# convert to UTF-8 all files that give warnings.
-for textfile in CHANGES; do
-    mv $textfile $textfile.old
-    iconv --from-code ISO8859-1 --to-code UTF-8 --output $textfile $textfile.old
-    rm -f $textfile.old
-done
-
 install -d %{buildroot}%{_mandir}/man8
 install -m0644 man/*.8 %{buildroot}%{_mandir}/man8/
 
