@@ -15,7 +15,7 @@
 Summary:	Robust, small and high performance HTTP and reverse proxy server
 Name:		nginx
 Version:	1.23.3
-Release:	1
+Release:	2
 Group:		System/Servers
 # BSD License (two clause)
 # http://www.freebsd.org/copyright/freebsd-license.html
@@ -29,12 +29,12 @@ Source4:	virtual.conf
 Source5:	ssl.conf
 Source6:	nginx.conf
 Source7:	php.conf
+Source8:	default.conf
 Source100:	index.html
 Source101:	poweredby.png
 Source102:	nginx-logo.png
 Source103:	50x.html
 Source104:	404.html
-Patch0:		nginx-1.15.2-enable-ipv6.patch
 
 BuildRequires:	gd-devel
 BuildRequires:	GeoIP-devel
@@ -45,6 +45,8 @@ BuildRequires:	pkgconfig(libxslt)
 BuildRequires:	pkgconfig(openssl)
 BuildRequires:	pkgconfig(zlib)
 BuildRequires:	systemd-macros
+# For _create_ssl_certificate macro
+BuildRequires:	rpm-helper
 Requires:	pcre
 Requires:	openssl
 Provides:	webserver
@@ -149,13 +151,17 @@ install -p -D -m 0644 %{SOURCE3} %{buildroot}%{_sysconfdir}/logrotate.d/%{name}
 install -p -d -m 0755 %{buildroot}%{nginx_confdir}/conf.d
 install -p -m 0644 %{SOURCE4} %{SOURCE5} %{buildroot}%{nginx_confdir}/conf.d
 install -p -D -m 0644 %{SOURCE6} %{buildroot}%{nginx_confdir}/
+install -p -D -m 0644 %{SOURCE6} %{buildroot}%{nginx_confdir}/nginx.conf.default
 install -p -D -m 0644 %{SOURCE7} %{buildroot}%{nginx_confdir}/
+install -p -D -m 0644 %{SOURCE7} %{buildroot}%{nginx_confdir}/php.conf.default
 install -p -d -m 0755 %{buildroot}%{nginx_home_tmp}
 install -p -d -m 0755 %{buildroot}%{nginx_logdir}
 install -p -d -m 0755 %{buildroot}%{nginx_webroot}
 install -p -d -m 0755 %{buildroot}%{nginx_modulesdir}
 install -p -d -m 0755 %{buildroot}%{nginx_datadir}/modules
 mkdir -p %{buildroot}%{nginx_confdir}/sites-available %{buildroot}%{nginx_confdir}/sites-enabled
+install -p -D -m 0644 %{SOURCE8} %{buildroot}%{nginx_confdir}/sites-available/default.conf
+ln -s ../sites-available/default.conf %{buildroot}%{nginx_confdir}/sites-enabled/
 
 install -p -m 0644 %{SOURCE100} %{SOURCE101} %{SOURCE102} %{SOURCE103} %{SOURCE104} %{buildroot}%{nginx_webroot}
 
@@ -176,6 +182,7 @@ EOF
 
 %post
 %systemd_post nginx.service
+%_create_ssl_certificate nginx
 
 %preun
 %systemd_preun nginx.service
@@ -226,9 +233,12 @@ fi
 %config(noreplace) %{nginx_confdir}/koi-utf
 %config(noreplace) %{nginx_confdir}/%{name}.conf
 %config(noreplace) %{nginx_confdir}/mime.types
-%config %{nginx_confdir}/php.conf
+%config(noreplace) %{nginx_confdir}/php.conf
+%config %{nginx_confdir}/php.conf.default
 %dir %{nginx_confdir}/sites-available
+%config(noreplace) %{nginx_confdir}/sites-available/default.conf
 %dir %{nginx_confdir}/sites-enabled
+%config(noreplace) %{nginx_confdir}/sites-enabled/default.conf
 %config(noreplace) %{nginx_confdir}/uwsgi_params
 %config(noreplace) %{nginx_confdir}/uwsgi_params.default
 %config(noreplace) %{_sysconfdir}/logrotate.d/%{name}
