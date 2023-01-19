@@ -27,6 +27,8 @@ Source2:	nginx.service
 Source3:	nginx.logrotate
 Source4:	virtual.conf
 Source5:	ssl.conf
+Source6:	nginx.conf
+Source7:	php.conf
 Source100:	index.html
 Source101:	poweredby.png
 Source102:	nginx-logo.png
@@ -146,12 +148,14 @@ install -p -D -m 0644 %{SOURCE2} %{buildroot}%{_unitdir}/nginx.service
 install -p -D -m 0644 %{SOURCE3} %{buildroot}%{_sysconfdir}/logrotate.d/%{name}
 install -p -d -m 0755 %{buildroot}%{nginx_confdir}/conf.d
 install -p -m 0644 %{SOURCE4} %{SOURCE5} %{buildroot}%{nginx_confdir}/conf.d
+install -p -D -m 0644 %{SOURCE6} %{buildroot}%{nginx_confdir}/
+install -p -D -m 0644 %{SOURCE7} %{buildroot}%{nginx_confdir}/
 install -p -d -m 0755 %{buildroot}%{nginx_home_tmp}
 install -p -d -m 0755 %{buildroot}%{nginx_logdir}
 install -p -d -m 0755 %{buildroot}%{nginx_webroot}
 install -p -d -m 0755 %{buildroot}%{nginx_modulesdir}
 install -p -d -m 0755 %{buildroot}%{nginx_datadir}/modules
-
+mkdir -p %{buildroot}%{nginx_confdir}/sites-available %{buildroot}%{nginx_confdir}/sites-enabled
 
 install -p -m 0644 %{SOURCE100} %{SOURCE101} %{SOURCE102} %{SOURCE103} %{SOURCE104} %{buildroot}%{nginx_webroot}
 
@@ -214,14 +218,17 @@ fi
 %config(noreplace) %{nginx_confdir}/scgi_params
 %config(noreplace) %{nginx_confdir}/scgi_params.default
 %config(noreplace) %{nginx_confdir}/fastcgi.conf
-%config(noreplace) %{nginx_confdir}/fastcgi.conf.default
-%config(noreplace) %{nginx_confdir}/mime.types.default
+%config %{nginx_confdir}/fastcgi.conf.default
+%config %{nginx_confdir}/mime.types.default
 %config(noreplace) %{nginx_confdir}/fastcgi_params
-%config(noreplace) %{nginx_confdir}/fastcgi_params.default
+%config %{nginx_confdir}/fastcgi_params.default
 %config(noreplace) %{nginx_confdir}/koi-win
 %config(noreplace) %{nginx_confdir}/koi-utf
 %config(noreplace) %{nginx_confdir}/%{name}.conf
 %config(noreplace) %{nginx_confdir}/mime.types
+%config %{nginx_confdir}/php.conf
+%dir %{nginx_confdir}/sites-available
+%dir %{nginx_confdir}/sites-enabled
 %config(noreplace) %{nginx_confdir}/uwsgi_params
 %config(noreplace) %{nginx_confdir}/uwsgi_params.default
 %config(noreplace) %{_sysconfdir}/logrotate.d/%{name}
