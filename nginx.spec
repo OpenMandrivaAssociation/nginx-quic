@@ -15,7 +15,7 @@
 Summary:	Robust, small and high performance HTTP and reverse proxy server
 Name:		nginx
 Version:	1.23.3
-Release:	2
+Release:	3
 Group:		System/Servers
 # BSD License (two clause)
 # http://www.freebsd.org/copyright/freebsd-license.html
@@ -145,6 +145,7 @@ find %{buildroot} -type f -exec chmod 0644 {} \;
 find %{buildroot} -type f -name '*.so' -exec chmod 0755 {} \;
 chmod 0755 %{buildroot}%{_sbindir}/nginx
 
+# Install our configs...
 install -p -D -m 0644 %{SOURCE1} %{buildroot}%{_sysusersdir}/%{name}.conf
 install -p -D -m 0644 %{SOURCE2} %{buildroot}%{_unitdir}/nginx.service
 install -p -D -m 0644 %{SOURCE3} %{buildroot}%{_sysconfdir}/logrotate.d/%{name}
@@ -164,6 +165,9 @@ install -p -D -m 0644 %{SOURCE8} %{buildroot}%{nginx_confdir}/sites-available/de
 ln -s ../sites-available/default.conf %{buildroot}%{nginx_confdir}/sites-enabled/
 
 install -p -m 0644 %{SOURCE100} %{SOURCE101} %{SOURCE102} %{SOURCE103} %{SOURCE104} %{buildroot}%{nginx_webroot}
+
+# And get rid of broken upstream config samples
+rm -rf %{buildroot}%{nginx_confdir}/conf.d
 
 # add current version
 sed -i -e "s|_VERSION_|%{version}|g" %{buildroot}%{nginx_webroot}/index.html
@@ -218,8 +222,6 @@ fi
 %{_unitdir}/nginx.service
 %{nginx_datadir}/html/*.html
 %dir %{nginx_confdir}
-%dir %{nginx_confdir}/conf.d
-%config(noreplace) %{nginx_confdir}/conf.d/*.conf
 %config(noreplace) %{nginx_confdir}/win-utf
 %config(noreplace) %{nginx_confdir}/%{name}.conf.default
 %config(noreplace) %{nginx_confdir}/scgi_params
