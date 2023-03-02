@@ -219,6 +219,8 @@ fi
 %{_presetdir}/86-nginx.preset
 %{_unitdir}/nginx.service
 %{nginx_datadir}/html/*.html
+/srv/www/html/*.html
+/srv/www/html/*.png
 %dir %{nginx_confdir}
 %config(noreplace) %{nginx_confdir}/win-utf
 %config(noreplace) %{nginx_confdir}/%{name}.conf.default
