@@ -1,1 +1,0 @@
-u nginx - "User for nginx" /var/lib/nginx /bin/false

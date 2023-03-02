@@ -1,7 +1,5 @@
 %global _disable_ld_no_undefined 1
 
-%define nginx_user nginx
-%define nginx_group %{nginx_user}
 %define nginx_home /var/lib/nginx
 %define nginx_home_tmp %{nginx_home}/tmp
 %define nginx_logdir /var/log/nginx
@@ -15,21 +13,20 @@
 Summary:	Robust, small and high performance HTTP and reverse proxy server
 Name:		nginx
 Version:	1.23.3
-Release:	3
+Release:	4
 Group:		System/Servers
 # BSD License (two clause)
 # http://www.freebsd.org/copyright/freebsd-license.html
 License:	BSD
 Url:		http://nginx.net/
 Source0:	http://nginx.org/download/%{name}-%{version}.tar.gz
-Source1:	nginx.sysusers
-Source2:	nginx.service
-Source3:	nginx.logrotate
-Source4:	virtual.conf
-Source5:	ssl.conf
-Source6:	nginx.conf
-Source7:	php.conf
-Source8:	default.conf
+Source1:	nginx.service
+Source2:	nginx.logrotate
+Source3:	virtual.conf
+Source4:	ssl.conf
+Source5:	nginx.conf
+Source6:	php.conf
+Source7:	default.conf
 Source100:	index.html
 Source101:	poweredby.png
 Source102:	nginx-logo.png
@@ -50,6 +47,9 @@ BuildRequires:	rpm-helper
 Requires:	pcre
 Requires:	openssl
 Provides:	webserver
+Requires:	www-user
+Prereq:		www-user
+Requires(pre):	www-user
 %systemd_requires
 
 %description
@@ -88,8 +88,8 @@ Requires:	%{name}
 %set_build_flags
 
 ./configure \
-	--user=%{nginx_user} \
-	--group=%{nginx_group} \
+	--user=www \
+	--group=www \
 	--prefix=%{nginx_datadir} \
 	--sbin-path=%{_sbindir}/%{name} \
 	--conf-path=%{nginx_confdir}/%{name}.conf \
@@ -146,25 +146,24 @@ find %{buildroot} -type f -name '*.so' -exec chmod 0755 {} \;
 chmod 0755 %{buildroot}%{_sbindir}/nginx
 
 # Install our configs...
-install -p -D -m 0644 %{SOURCE1} %{buildroot}%{_sysusersdir}/%{name}.conf
-install -p -D -m 0644 %{SOURCE2} %{buildroot}%{_unitdir}/nginx.service
-install -p -D -m 0644 %{SOURCE3} %{buildroot}%{_sysconfdir}/logrotate.d/%{name}
+install -p -D -m 0644 %{S:1} %{buildroot}%{_unitdir}/nginx.service
+install -p -D -m 0644 %{S:2} %{buildroot}%{_sysconfdir}/logrotate.d/%{name}
 install -p -d -m 0755 %{buildroot}%{nginx_confdir}/conf.d
-install -p -m 0644 %{SOURCE4} %{SOURCE5} %{buildroot}%{nginx_confdir}/conf.d
-install -p -D -m 0644 %{SOURCE6} %{buildroot}%{nginx_confdir}/
-install -p -D -m 0644 %{SOURCE6} %{buildroot}%{nginx_confdir}/nginx.conf.default
-install -p -D -m 0644 %{SOURCE7} %{buildroot}%{nginx_confdir}/
-install -p -D -m 0644 %{SOURCE7} %{buildroot}%{nginx_confdir}/php.conf.default
+install -p -m 0644 %{S:3} %{S:4} %{buildroot}%{nginx_confdir}/conf.d
+install -p -D -m 0644 %{S:5} %{buildroot}%{nginx_confdir}/
+install -p -D -m 0644 %{S:5} %{buildroot}%{nginx_confdir}/nginx.conf.default
+install -p -D -m 0644 %{S:6} %{buildroot}%{nginx_confdir}/
+install -p -D -m 0644 %{S:6} %{buildroot}%{nginx_confdir}/php.conf.default
 install -p -d -m 0755 %{buildroot}%{nginx_home_tmp}
 install -p -d -m 0755 %{buildroot}%{nginx_logdir}
 install -p -d -m 0755 %{buildroot}%{nginx_webroot}
 install -p -d -m 0755 %{buildroot}%{nginx_modulesdir}
 install -p -d -m 0755 %{buildroot}%{nginx_datadir}/modules
 mkdir -p %{buildroot}%{nginx_confdir}/sites-available %{buildroot}%{nginx_confdir}/sites-enabled
-install -p -D -m 0644 %{SOURCE8} %{buildroot}%{nginx_confdir}/sites-available/default.conf
+install -p -D -m 0644 %{S:7} %{buildroot}%{nginx_confdir}/sites-available/default.conf
 ln -s ../sites-available/default.conf %{buildroot}%{nginx_confdir}/sites-enabled/
 
-install -p -m 0644 %{SOURCE100} %{SOURCE101} %{SOURCE102} %{SOURCE103} %{SOURCE104} %{buildroot}%{nginx_webroot}
+install -p -m 0644 %{S:100} %{S:101} %{S:102} %{S:103} %{S:104} %{buildroot}%{nginx_webroot}
 
 # And get rid of broken upstream config samples
 rm -rf %{buildroot}%{nginx_confdir}/conf.d
@@ -217,7 +216,6 @@ fi
 %{_sbindir}/%{name}
 %{_mandir}/man3/%{name}.3pm*
 %{_mandir}/man8/*
-%{_sysusersdir}/%{name}.conf
 %{_presetdir}/86-nginx.preset
 %{_unitdir}/nginx.service
 %{nginx_datadir}/html/*.html
@@ -244,10 +242,9 @@ fi
 %config(noreplace) %{nginx_confdir}/uwsgi_params
 %config(noreplace) %{nginx_confdir}/uwsgi_params.default
 %config(noreplace) %{_sysconfdir}/logrotate.d/%{name}
-%attr(-,%{nginx_user},%{nginx_group}) %dir %{nginx_home}
-%attr(-,%{nginx_user},%{nginx_group}) %dir %{nginx_home_tmp}
-%attr(-,%{nginx_user},%{nginx_group}) %dir %{nginx_logdir}
-/srv/www
+%attr(-,www,www) %dir %{nginx_home}
+%attr(-,www,www) %dir %{nginx_home_tmp}
+%attr(-,www,www) %dir %{nginx_logdir}
 
 %files mod-http-perl
 %{nginx_datadir}/modules/mod-http-perl.conf
