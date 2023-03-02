@@ -10,16 +10,17 @@
 
 %global optflags %{optflags} -Ofast
 
-Summary:	Robust, small and high performance HTTP and reverse proxy server
-Name:		nginx
-Version:	1.23.3
-Release:	4
+Summary:	Version of the NGINX web server with support for QUIC and HTTP3
+Name:		nginx-quic
+Version:	20230302
+Release:	1
 Group:		System/Servers
 # BSD License (two clause)
 # http://www.freebsd.org/copyright/freebsd-license.html
 License:	BSD
 Url:		http://nginx.net/
-Source0:	http://nginx.org/download/%{name}-%{version}.tar.gz
+# hg repository at https://hg.nginx.org/nginx-quic
+Source0:	https://hg.nginx.org/nginx-quic/archive/quic.tar.gz
 Source1:	nginx.service
 Source2:	nginx.logrotate
 Source3:	virtual.conf
@@ -33,6 +34,7 @@ Source102:	nginx-logo.png
 Source103:	50x.html
 Source104:	404.html
 
+Obsoletes:	nginx < 1.24.0
 BuildRequires:	gd-devel
 BuildRequires:	GeoIP-devel
 BuildRequires:	perl-devel
@@ -59,7 +61,7 @@ proxy server written by Igor Sysoev.
 %package mod-http-perl
 Summary:	Nginx HTTP perl module
 Group:		System/Servers
-Requires:	%{name}
+Requires:	%{name} = %{EVRD}
 
 %description mod-http-perl
 %{summary}.
@@ -67,7 +69,7 @@ Requires:	%{name}
 %package mod-http-geoip
 Summary:	Nginx HTTP geoip module
 Group:		System/Servers
-Requires:	%{name}
+Requires:	%{name} = %{EVRD}
 Requires:	geoip
 
 %description mod-http-geoip
@@ -75,36 +77,37 @@ Requires:	geoip
 
 %package mod-http-image-filter
 Summary:	Nginx HTTP image filter module
-Requires:	%{name}
+Requires:	%{name} = %{EVRD}
 
 %description mod-http-image-filter
 %{summary}.
 
 %prep
-%autosetup -p1
+%autosetup -p1 -n nginx-quic-quic
 
 %build
 %serverbuild_hardened
 %set_build_flags
 
-./configure \
+./auto/configure \
 	--user=www \
 	--group=www \
 	--prefix=%{nginx_datadir} \
-	--sbin-path=%{_sbindir}/%{name} \
-	--conf-path=%{nginx_confdir}/%{name}.conf \
+	--sbin-path=%{_sbindir}/nginx \
+	--conf-path=%{nginx_confdir}/nginx.conf \
 	--error-log-path=%{nginx_logdir}/error.log \
 	--http-log-path=%{nginx_logdir}/access.log \
 	--http-client-body-temp-path=%{nginx_home_tmp}/client_body \
 	--http-proxy-temp-path=%{nginx_home_tmp}/proxy \
 	--http-fastcgi-temp-path=%{nginx_home_tmp}/fastcgi \
-	--pid-path=/run/%{name}.pid \
-	--lock-path=/var/lock/subsys/%{name} \
+	--pid-path=/run/nginx.pid \
+	--lock-path=/var/lock/subsys/nginx \
 	--modules-path=%{nginx_modulesdir} \
 	--with-file-aio \
 	--with-ipv6 \
 	--with-http_ssl_module \
 	--with-http_v2_module \
+	--with-http_v3_module \
 	--with-http_slice_module \
 	--with-http_realip_module \
 	--with-http_addition_module \
@@ -147,7 +150,7 @@ chmod 0755 %{buildroot}%{_sbindir}/nginx
 
 # Install our configs...
 install -p -D -m 0644 %{S:1} %{buildroot}%{_unitdir}/nginx.service
-install -p -D -m 0644 %{S:2} %{buildroot}%{_sysconfdir}/logrotate.d/%{name}
+install -p -D -m 0644 %{S:2} %{buildroot}%{_sysconfdir}/logrotate.d/nginx
 install -p -d -m 0755 %{buildroot}%{nginx_confdir}/conf.d
 install -p -m 0644 %{S:3} %{S:4} %{buildroot}%{nginx_confdir}/conf.d
 install -p -D -m 0644 %{S:5} %{buildroot}%{nginx_confdir}/
@@ -170,9 +173,6 @@ rm -rf %{buildroot}%{nginx_confdir}/conf.d
 
 # add current version
 sed -i -e "s|_VERSION_|%{version}|g" %{buildroot}%{nginx_webroot}/index.html
-
-install -d %{buildroot}%{_mandir}/man8
-install -m0644 man/*.8 %{buildroot}%{_mandir}/man8/
 
 echo 'load_module "%{nginx_modulesdir}/ngx_http_perl_module.so";' > %{buildroot}%{nginx_datadir}/modules/mod-http-perl.conf
 echo 'load_module "%{nginx_modulesdir}/ngx_http_geoip_module.so";' > %{buildroot}%{nginx_datadir}/modules/mod-http-geoip.conf
@@ -209,13 +209,12 @@ if [ $1 -eq 1 ]; then
 fi
 
 %files
-%doc LICENSE CHANGES README
+%doc README
 %dir %{nginx_datadir}
 %dir %{nginx_datadir}/modules
 %dir %{nginx_modulesdir}
-%{_sbindir}/%{name}
-%{_mandir}/man3/%{name}.3pm*
-%{_mandir}/man8/*
+%{_sbindir}/nginx
+%{_mandir}/man3/nginx.3pm*
 %{_presetdir}/86-nginx.preset
 %{_unitdir}/nginx.service
 %{nginx_datadir}/html/*.html
@@ -223,7 +222,7 @@ fi
 /srv/www/html/*.png
 %dir %{nginx_confdir}
 %config(noreplace) %{nginx_confdir}/win-utf
-%config(noreplace) %{nginx_confdir}/%{name}.conf.default
+%config(noreplace) %{nginx_confdir}/nginx.conf.default
 %config(noreplace) %{nginx_confdir}/scgi_params
 %config(noreplace) %{nginx_confdir}/scgi_params.default
 %config(noreplace) %{nginx_confdir}/fastcgi.conf
@@ -233,7 +232,7 @@ fi
 %config %{nginx_confdir}/fastcgi_params.default
 %config(noreplace) %{nginx_confdir}/koi-win
 %config(noreplace) %{nginx_confdir}/koi-utf
-%config(noreplace) %{nginx_confdir}/%{name}.conf
+%config(noreplace) %{nginx_confdir}/nginx.conf
 %config(noreplace) %{nginx_confdir}/mime.types
 %config(noreplace) %{nginx_confdir}/php.conf
 %config %{nginx_confdir}/php.conf.default
@@ -243,7 +242,7 @@ fi
 %config(noreplace) %{nginx_confdir}/sites-enabled/default.conf
 %config(noreplace) %{nginx_confdir}/uwsgi_params
 %config(noreplace) %{nginx_confdir}/uwsgi_params.default
-%config(noreplace) %{_sysconfdir}/logrotate.d/%{name}
+%config(noreplace) %{_sysconfdir}/logrotate.d/nginx
 %attr(-,www,www) %dir %{nginx_home}
 %attr(-,www,www) %dir %{nginx_home_tmp}
 %attr(-,www,www) %dir %{nginx_logdir}
@@ -251,7 +250,7 @@ fi
 %files mod-http-perl
 %{nginx_datadir}/modules/mod-http-perl.conf
 %{nginx_modulesdir}/ngx_http_perl_module.so
-%dir %{perl_vendorarch}/auto/%{name}
+%dir %{perl_vendorarch}/auto/nginx
 %{perl_vendorarch}/nginx.pm
 %{perl_vendorarch}/auto/nginx/nginx.so
 
