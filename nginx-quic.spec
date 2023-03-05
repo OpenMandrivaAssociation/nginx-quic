@@ -13,7 +13,7 @@
 Summary:	Version of the NGINX web server with support for QUIC and HTTP3
 Name:		nginx-quic
 Version:	20230302
-Release:	1
+Release:	2
 Group:		System/Servers
 # BSD License (two clause)
 # http://www.freebsd.org/copyright/freebsd-license.html
@@ -21,13 +21,14 @@ License:	BSD
 Url:		http://nginx.net/
 # hg repository at https://hg.nginx.org/nginx-quic
 Source0:	https://hg.nginx.org/nginx-quic/archive/quic.tar.gz
-Source1:	nginx.service
-Source2:	nginx.logrotate
-Source3:	virtual.conf
-Source4:	ssl.conf
-Source5:	nginx.conf
-Source6:	php.conf
-Source7:	default.conf
+Source1:	https://github.com/sergey-dryabzhinsky/nginx-rtmp-module/archive/refs/tags/v1.2.2-r1.tar.gz
+Source51:	nginx.service
+Source52:	nginx.logrotate
+Source53:	virtual.conf
+Source54:	ssl.conf
+Source55:	nginx.conf
+Source56:	php.conf
+Source57:	default.conf
 Source100:	index.html
 Source101:	poweredby.png
 Source102:	nginx-logo.png
@@ -83,7 +84,7 @@ Requires:	%{name} = %{EVRD}
 %{summary}.
 
 %prep
-%autosetup -p1 -n nginx-quic-quic
+%autosetup -p1 -n nginx-quic-quic -a 1
 
 %build
 %serverbuild_hardened
@@ -103,6 +104,7 @@ Requires:	%{name} = %{EVRD}
 	--pid-path=/run/nginx.pid \
 	--lock-path=/var/lock/subsys/nginx \
 	--modules-path=%{nginx_modulesdir} \
+	--add-module=nginx-rtmp-module-* \
 	--with-file-aio \
 	--with-ipv6 \
 	--with-http_ssl_module \
@@ -149,21 +151,21 @@ find %{buildroot} -type f -name '*.so' -exec chmod 0755 {} \;
 chmod 0755 %{buildroot}%{_sbindir}/nginx
 
 # Install our configs...
-install -p -D -m 0644 %{S:1} %{buildroot}%{_unitdir}/nginx.service
-install -p -D -m 0644 %{S:2} %{buildroot}%{_sysconfdir}/logrotate.d/nginx
+install -p -D -m 0644 %{S:51} %{buildroot}%{_unitdir}/nginx.service
+install -p -D -m 0644 %{S:52} %{buildroot}%{_sysconfdir}/logrotate.d/nginx
 install -p -d -m 0755 %{buildroot}%{nginx_confdir}/conf.d
-install -p -m 0644 %{S:3} %{S:4} %{buildroot}%{nginx_confdir}/conf.d
-install -p -D -m 0644 %{S:5} %{buildroot}%{nginx_confdir}/
-install -p -D -m 0644 %{S:5} %{buildroot}%{nginx_confdir}/nginx.conf.default
-install -p -D -m 0644 %{S:6} %{buildroot}%{nginx_confdir}/
-install -p -D -m 0644 %{S:6} %{buildroot}%{nginx_confdir}/php.conf.default
+install -p -m 0644 %{S:53} %{S:54} %{buildroot}%{nginx_confdir}/conf.d
+install -p -D -m 0644 %{S:55} %{buildroot}%{nginx_confdir}/
+install -p -D -m 0644 %{S:55} %{buildroot}%{nginx_confdir}/nginx.conf.default
+install -p -D -m 0644 %{S:56} %{buildroot}%{nginx_confdir}/
+install -p -D -m 0644 %{S:56} %{buildroot}%{nginx_confdir}/php.conf.default
 install -p -d -m 0755 %{buildroot}%{nginx_home_tmp}
 install -p -d -m 0755 %{buildroot}%{nginx_logdir}
 install -p -d -m 0755 %{buildroot}%{nginx_webroot}
 install -p -d -m 0755 %{buildroot}%{nginx_modulesdir}
 install -p -d -m 0755 %{buildroot}%{nginx_datadir}/modules
 mkdir -p %{buildroot}%{nginx_confdir}/sites-available %{buildroot}%{nginx_confdir}/sites-enabled
-install -p -D -m 0644 %{S:7} %{buildroot}%{nginx_confdir}/sites-available/default.conf
+install -p -D -m 0644 %{S:57} %{buildroot}%{nginx_confdir}/sites-available/default.conf
 ln -s ../sites-available/default.conf %{buildroot}%{nginx_confdir}/sites-enabled/
 
 install -p -m 0644 %{S:100} %{S:101} %{S:102} %{S:103} %{S:104} %{buildroot}%{nginx_webroot}
