@@ -13,7 +13,7 @@
 Summary:	Version of the NGINX web server with support for QUIC and HTTP3
 Name:		nginx-quic
 Version:	20230302
-Release:	2
+Release:	3
 Group:		System/Servers
 # BSD License (two clause)
 # http://www.freebsd.org/copyright/freebsd-license.html
@@ -24,7 +24,6 @@ Source0:	https://hg.nginx.org/nginx-quic/archive/quic.tar.gz
 Source1:	https://github.com/sergey-dryabzhinsky/nginx-rtmp-module/archive/refs/tags/v1.2.2-r1.tar.gz
 Source51:	nginx.service
 Source52:	nginx.logrotate
-Source53:	virtual.conf
 Source54:	ssl.conf
 Source55:	nginx.conf
 Source56:	php.conf
@@ -153,11 +152,9 @@ chmod 0755 %{buildroot}%{_sbindir}/nginx
 # Install our configs...
 install -p -D -m 0644 %{S:51} %{buildroot}%{_unitdir}/nginx.service
 install -p -D -m 0644 %{S:52} %{buildroot}%{_sysconfdir}/logrotate.d/nginx
-install -p -d -m 0755 %{buildroot}%{nginx_confdir}/conf.d
-install -p -m 0644 %{S:53} %{S:54} %{buildroot}%{nginx_confdir}/conf.d
-install -p -D -m 0644 %{S:55} %{buildroot}%{nginx_confdir}/
+install -p -D -m 0644 %{S:54} %{S:55} %{S:56} %{buildroot}%{nginx_confdir}/
+install -p -D -m 0644 %{S:54} %{buildroot}%{nginx_confdir}/ssl.conf.default
 install -p -D -m 0644 %{S:55} %{buildroot}%{nginx_confdir}/nginx.conf.default
-install -p -D -m 0644 %{S:56} %{buildroot}%{nginx_confdir}/
 install -p -D -m 0644 %{S:56} %{buildroot}%{nginx_confdir}/php.conf.default
 install -p -d -m 0755 %{buildroot}%{nginx_home_tmp}
 install -p -d -m 0755 %{buildroot}%{nginx_logdir}
@@ -236,7 +233,9 @@ fi
 %config(noreplace) %{nginx_confdir}/koi-utf
 %config(noreplace) %{nginx_confdir}/nginx.conf
 %config(noreplace) %{nginx_confdir}/mime.types
+%config(noreplace) %{nginx_confdir}/ssl.conf
 %config(noreplace) %{nginx_confdir}/php.conf
+%config %{nginx_confdir}/ssl.conf.default
 %config %{nginx_confdir}/php.conf.default
 %dir %{nginx_confdir}/sites-available
 %config(noreplace) %{nginx_confdir}/sites-available/default.conf
