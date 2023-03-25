@@ -46,7 +46,7 @@ BuildRequires:	pkgconfig(openssl)
 BuildRequires:	pkgconfig(zlib)
 BuildRequires:	systemd-macros
 # For _create_ssl_certificate macro
-BuildRequires:	rpm-helper
+Requires:	rpm-helper
 Requires:	pcre
 Requires:	openssl
 Provides:	webserver
