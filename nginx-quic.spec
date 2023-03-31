@@ -13,7 +13,7 @@
 Summary:	Version of the NGINX web server with support for QUIC and HTTP3
 Name:		nginx-quic
 Version:	20230302
-Release:	3
+Release:	4
 Group:		System/Servers
 # BSD License (two clause)
 # http://www.freebsd.org/copyright/freebsd-license.html
